@@ -1,0 +1,705 @@
+---
+title: "Package 'traitdataform'"
+author: "Florian D. Schneider"
+output:  rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{traitdataform}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: div05.bib
+csl: mee.csl
+---
+
+```{r, echo = FALSE, warning= FALSE, message=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+
+library(traitdataform)
+```
+
+Assistance for handling functional trait data and transferring them into the Ecological Trait-data Standard (Schneider et al. 2018, https://terminologies.gfbio.org/terms/ets/pages/ doi: [10.5281/zenodo.1485739](http://dx.doi.org/10.5281/zenodo.1485739)). 
+
+There are two major use cases for the package: 
+
+- preparation of own trait datasets for upload into public data bases, and
+- harmonizing trait datasets from different sources by moulding them into a unified format.
+
+The toolset of the package includes
+
+1. transforming typical trait-data formats (e.g. species-trait-matrix or measurement-table data) into a unified long-table format and mapping column names into terms provided in the Ecological Trait-data Standard (ETS) (see section [1. Reading data](#reading-data)),
+2. mapping of trait concepts onto a user-provided traitlist (i.e. a thesaurus of traits) or globally accessible URIs  (see section [2. Standardize traits](#standardize-traits)) and unify units and factor levels (see vignette ['Handling units with trait-data'](traitdataform-units.html)),
+3. mapping of species concepts onto globally accessible definitions via URIs (pointing to GFBio taxonomic ontology server) (see section [3. Standardize taxa](#standardize-taxa)), 
+4. Merging and handling compiled trait-data, while keeping track of the metadata for each original dataset (see section [4. Working with trait-datasets](#working-with-trait-datasets)) 
+5. saving trait dataset into a desired format using templates (e.g. for project-specific databases or online repositories) (see section [5. Writing data](#writing-data)) 
+
+This vignette contains step-by step instructions for transferring own data into a standardized trait-dataset for upload to public databases. See Schneider et al. 2018 'Towards an Ecological Trait-data Standard' (pre-print on biorxiv.org, doi: [10.1101/328302](http://dx.doi.org/10.1101/328302) ) for a discussion of the rationale. 
+
+---
+
+# 1. Reading data
+
+## load data from source
+
+The first step is to load your data into R. This can be your own data, read from file, or data published elsewhere, directly accessible via an URL. 
+
+R knows many ways of getting your data into an R object. In most cases you would read an object from a csv or txt file while maintaining the column headers. 
+
+```{r, eval = FALSE}
+carabids <- read.table("../../data/carabid traits final.txt", header = TRUE)
+```
+
+If reading files from a file repository, you can refer to the URL directly, e.g. 
+
+```{r}
+# pulling data from van der Plas F, van Klink R, Manning P, Olff H, Fischer M (2017) Sensitivity of functional diversity metrics to sampling intensity. Methods in Ecology and Evolution 8(9): 1072-1080. https://doi.org/10.1111/2041-210x.12728
+
+carabids <- read.delim("https://datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt")
+
+```
+
+Most trait data are stored in one of the following two formats:
+
+- **species$\times$trait matrix** :  a single account of a trait value for each species (in rows) for a couple of different traits (in columns). No replicates of species are reported. This is the most likely format for literature data, where aggregate measurements or facts for entire species have been collated into a single lookup table. 
+- **observation wide table** :  in case of measured data, authors may report multiple raw measurements of different traits (in columns) taken from a single observation instance of a species, i.e. an individual (in rows). Repeated measures of the same trait might also be included as columns or pooled into average values. This is valuable for investigations of intra-specific variation, and also leaves space for filtering by co-factors or analyzing trait response along environmental gradients.
+
+In both cases, additional information on the species or observation may be stored in further columns (e.g. the unit in which a value is reported or the literature source for this measurement or fact, or the date and geolocation of sampling), or in a separate data sheet linked via identifiers for trait, taxon, occurrence or sampling/measurement event.
+As the column names and the width of the table varies with the number of traits included, merging data from different sources requires user-defined mapping and manual harmonization of these structures. 
+
+A more effective format is the **measurement long-table** [@wickham14; @parr16; @kattge11a], where each row is reserved for a single measurement or fact of a specific trait.
+This allows repeated measurements on a single individual to be stored by linking the data from separate rows via a unique  identifier for each individual (labelled `occurrenceID`). 
+Also, multivariate trait measurements can be recorded in this format by linking multiple rows via a unique measurement identifier.  Long-table datasets purport multiple advantages for data manipulation (e.g. filtering, sub-setting and aggregating data), visualization (e.g. plot measured values by factor variable or taxon) and statistical modelling (e.g. ANOVA for testing difference of trait value by sex) [@wickham14].
+Each row of the dataset can therefore be interpreted as a statement of an 'entity x having a qualitative/quantitative feature y' [@garnier17; @schneider18].
+As long-table formats draw from a defined set of columns,  merging of datasets is much easier. 
+
+The function `as.traitdata()` provided in the package assist in transferring data into the measurement long-table format. For this function to work, it needs at least to know about the columns of the original data that contain trait values (parameter `traits`), and the column which contains the taxonomic concept (parameter `taxa`).
+
+```{r, warning=FALSE}
+dataset1 <- as.traitdata(carabids, 
+                         taxa = "name_correct",
+                         traits = c("body_length", 
+                                    "antenna_length", 
+                                    "metafemur_length", 
+                                    "eyewidth_corr"),
+                         units = "mm"
+                         )
+
+head(dataset1)
+```
+
+Note that in the output table the columns have been renamed [according to the ETS](https://terminologies.gfbio.org/terms/ets/pages/). 
+The essential columns are `traitName`, `traitValue` for the reported measurement or fact as well as `scientificName` for the taxon concept. The newly assigned column `measurementID` contains a running number for each individual trait measurement.  
+The function automatically interprets data as a species$\times$traits matrix if the taxa column contains only unique entries and no duplicates. 
+In case of multiple assignments to the same taxon, the script assumes an observation wide-table and procures a new column `occurrenceID` which links measurements taken on the same individuals. Both `occurrenceID` and `measurementID` can be provided by the author using the parameter `occurrences` (as a column name or a vector) or `measurements` (as a column name or a vector).
+
+```{r}
+heteroptera_raw <-  read.delim(url("https://ndownloader.figshare.com/files/5633883", 
+                                         encoding = "windows-1252"),
+                                    stringsAsFactors=TRUE)
+
+# Data pulication: M. Gossner, Martin; K. Simons, Nadja; Höck, Leonhard; W.
+# Weisser, Wolfgang (2016): Morphometric measures of Heteroptera sampled in
+# grasslands across three regions of Germany. figshare.
+# https://doi.org/10.6084/m9.figshare.c.3307611.v1
+
+
+dataset2 <- as.traitdata(heteroptera_raw,
+              traits = c("Body_length", "Body_width", "Body_height", "Thorax_length",
+                         "Thorax_width", "Head_width", "Eye_width", "Antenna_Seg1",
+                         "Antenna_Seg2", "Antenna_Seg3", "Antenna_Seg4", "Antenna_Seg5",
+                         "Front.Tibia_length", "Mid.Tibia_length", "Hind.Tibia_length",
+                         "Front.Femur_length", "Hind.Femur_length", "Front.Femur_width",
+                         "Hind.Femur_width", "Rostrum_length", "Rostrum_width", 
+                         "Wing_length", "Wing_width"),
+              taxa = "SpeciesID",
+              occurrences = "ID"
+              )
+
+# show different trait measurements for same occurrence/individual
+subset(dataset2, occurrenceID == "5" ) 
+```
+
+This allows the user to be explicit about the structure of the output data.
+
+
+## specify units
+
+For a standardisation of quantitative trait data, the unit of measurement is essential. 
+Often, this information is kept in the metadata descriptions. But for a standardised table containing measurements from different sources, this information should always accompany the measurement value. 
+The ETS suggests the term `traitUnit` to contain the unit for each measurement in the data table. 
+
+The function `as.traitdata()` creates this column via its parameter `units` (see example above). 
+This can be done for all traits in a single stroke (if all reported values refer to the same unit) or to each trait specifically (if they used different measurement units or if the table comprises a mixture of quantitative and qualitative traits).  
+Accordingly, the parameter `units` takes a single character string, or a vector of character strings, containing valid entries as expected  by the package 'units' (Pebesma et al. 2016, https://github.com/edzer/units/, v0.4-5, Examples are 'mm', 'm2' or 'm^2', 'm/s' ). 
+
+The vignette ["Handling units with trait-data"](traitdataform-units.html) cover the various use cases of unit assignments and harmonizing trait-data with different units and different factor levels in depth. 
+
+
+## keep additional information
+
+The raw data might contain further information on the individuals or the trait measurement itself in further data columns that are valuable for later analysis. 
+This can be for instance data about the sex or developmental stage of the individual, the sampling or preservation method of the specimen, or the conditions under which the measurement was taken. 
+
+The parameter `keep` allows you to specify which columns contain valuable information as a character vector. As a negative version of `keep`, specifying `drop` would allow you to name the columns that are not valuable, while all others will be kept. Not specifying `keep` or `drop` will result in dropping all columns except the core measurement and identifier columns.  
+
+```{r}
+dataset2 <- as.traitdata(heteroptera_raw,
+              traits = c("Body_length", "Body_width", "Body_height", "Thorax_length",
+                         "Thorax_width", "Head_width", "Eye_width", "Antenna_Seg1",
+                         "Antenna_Seg2", "Antenna_Seg3", "Antenna_Seg4", "Antenna_Seg5",
+                         "Front.Tibia_length", "Mid.Tibia_length", "Hind.Tibia_length",
+                         "Front.Femur_length", "Hind.Femur_length", "Front.Femur_width",
+                         "Hind.Femur_width", "Rostrum_length", "Rostrum_width", 
+                         "Wing_length", "Wing_width"),
+              taxa = "SpeciesID",
+              occurrences = "ID",
+              keep = c("Sex")
+              )
+
+head(dataset2) 
+```
+
+The three extensions of the ETS provide standard terms for this kind of information: 
+
+- The [`Taxon` extension](https://terminologies.gfbio.org/terms/ets/pages/#extension-taxon) provides further terms for specifying the taxonomic resolution of the observation and to ensure the correct reference in case of synonyms and homonyms.
+- The [`Measurement Or Fact` extension](https://terminologies.gfbio.org/terms/ets/pages/#extension-measurement-or-fact)  provides terms to describe information at the level of single measurements or reported facts, such as the original literature reference for the reported value, the method of measurement or statistical method of aggregation. It provides important information that allows for the tracking of potential sources of noise or bias in measured data (e.g. variation in measurement method) or aggregated values (e.g. statistical method), as well as the source of reported facts (e.g. literature source or expert reference). 
+- The [`Occurrence` extension](https://terminologies.gfbio.org/terms/ets/pages/#extension-occurrence) contains vocabulary to describe information on the observation context of individual specimens, such as sex, life stage or age. This also includes the method of sampling and preservation, as well as the date and geographical location, which provide an important resource to analyze trait variation due to differences in space and time. 
+
+We highly recommend mapping the input columns into these standard terms by providing a named vector for `keep` that gives the target ETS terms as vector names. 
+
+```{r}
+dataset2 <- as.traitdata(heteroptera_raw,
+              traits = c("Body_length", "Body_width", "Body_height", "Thorax_length",
+                         "Thorax_width", "Head_width", "Eye_width", "Antenna_Seg1",
+                         "Antenna_Seg2", "Antenna_Seg3", "Antenna_Seg4", "Antenna_Seg5",
+                         "Front.Tibia_length", "Mid.Tibia_length", "Hind.Tibia_length",
+                         "Front.Femur_length", "Hind.Femur_length", "Front.Femur_width",
+                         "Hind.Femur_width", "Rostrum_length", "Rostrum_width", 
+                         "Wing_length", "Wing_width"),
+              taxa = "SpeciesID",
+              occurrences = "ID",
+              units = "mm",
+              keep = c(order = "Order", family = "Family", 
+                       sex = "Sex", lifeStage = "Wing_development", 
+                       basisOfRecordDescription = "Source", 
+                       verbatimLocality = "Center_Sampling_region", 
+                       references = "Voucher_ID" )
+)
+
+head(dataset2)
+```
+
+Note that a lack of a name in the named vector maintains the original name. Note also, that no checking for valid column names (as compared to the traitdata glossary) is performed at this stage. This is to ensure that the raw data table created by `as.traittable()` can contain any columns that the author considers relevant. The `keep` parameter can be used to rename columns into intuitive column names. 
+
+<!--
+## case example: adding further information on traits, species or single measurements
+
+Beyond measurement units, further information might be available that are not recorded in the raw data table, but are related to the trait type, the taxon, the individual or specimen, or to the reported fact, measurement or sampling event. 
+
+In most cases those information are kept in seperate data sheets of your file, e.g. the place were a specimen has been sampled or the literature source from where a species value has been cited. In this case, a unique identifier might link to this other datasheet, such as a number for each individual occurrence of a specimen (`occurrenceID`) or an identifier for a single measurement or reported fact (`measurementID`). 
+
+The trait data standard  provides two extensions of the namespace that should be used to describe these data:
+
+- the `occurrence` extension contains information on the level of individual specimens, such as date and location and method of sampling and preservation, or physiological specifications of the phenotype, such as sex, life stage or age. 
+- the `measurementOrFact` extension takes information at the level of single measurements or reported values, such as the original literature from where the value is cited, the method of measurement or statistical method of aggregation. 
+
+The extensions are compatible with Darwin Core Standard and EOL TraitBank.  
+
+You may decide to keep the information in a seperate data sheet. In that case, the traitdata table should at least contain a column with the respective identifier that directs to the covariate datasheet. The identifier might also take the format of a globally valid URI or API call.
+
+It is however recommended to add these information directly as own columns within the data table to enable an analysis of cofactors and correlations further down the road. This way, if datasets of different source are merged, the information is readily available without the risk of breaking the reference to an external datasheet. 
+
+The function `as.traitdata()` provides a set of parameters to add information at the different levels. The following three examples will illustrate how to add covariates to each occurrence or  measurement.  The principle is always the same: A unique identifier for these levels of information can be associated with a vector or data table containing the additional information, which will then be merged into the data table. The functionality builds on the base R function `merge.data.frame`, but checks for compatibility with the glossary of terms of the traitdata standard. 
+
+
+### Adding information on specimen level (occurrence Extension)
+
+- under construction - 
+
+### Adding information on measurement or fact (measurementOrFact Extension)
+
+- under construction -
+ -->
+
+
+## derived trait-values
+
+Many traits comprise compound measures of multiple traits, such as length-mass ratios or morphometric indices. Other traits must be refined in terms of factor levels, or reduced to binary trait values. 
+Many of these tasks can be achieved on the matrix raw data using base functions like `transform()`, `factor()` or `match()` or the `mutate()` function provided by the package 'plyr' before conversion into the long-table format. 
+
+However, if the data are converted to long-table format, these tasks may become tedious as they require splitting the data before the computation can be done. 
+The function `mutate.traitdata()` performs these tasks (working as a wrapper to `plyr::mutate()`) while keeping an eye on the units. 
+
+```{r}
+dataset2 <- mutate.traitdata(dataset2, 
+                            Body_shape = Body_length/Body_width, 
+                            Body_volume = Body_length*Body_width*Body_height,
+                            Wingload = Wing_length*Wing_width/Body_volume)
+
+head(dataset2[dataset2$traitName %in% c("Body_shape", "Body_volume", "Wingload"),])
+```
+
+Note that all existing traits remain untouched and additional trait measures will be added to the dataset, unless a definition replaces an already existing trait.
+
+It is important to note that the mutate function works at the level of data resolution that is provided by the data, i.e. for occurrence data with multiple measurements on a single individual, the data columns are mutated per `occurrenceID`. 
+
+# 2. Standardize traits
+
+The function `as.traitdata()` produced a tidy and correctly formatted version of your own trait data.
+We now turn to the challenging task of standardisation.
+
+The field `traitID` is meant to contain a globally valid reference to a trait definition that applies to the measurement in question. 
+Due to the heterogeneity of approaches, research questions and taxonomic focus in trait-based research, it is hard to come up with universal trait definitions that can be employed in each and every research context. 
+The mode of measurement or the precise prescriptions of a sampling procedure have been formalized into published handbooks,  [e.g. @cornelissen03; @perez-harguindeguy13; or for invertebrates, @moretti17], but are of limited use in harmonising trait data that pre-date or ignore this standard. Thesauri, e.g. the TOP Thesaurus of plant traits [@garnier17, employed by TRY] or Gramene.org offer definitions of plant traits in a formal language. For soil invertebrates, the T-SITA thesaurus offers a set of traits relevant for this organism group [see @schneider18 for a more detailed distinction of thesauri and ontologies]. 
+All in all, only for few organism groups and trait methodologies exist Unique Resource Identifiers (URIs) that provide a stable reference to an unambiguous definition and can be referenced from the dataset. 
+
+
+### Refer to trait definitions via URIs
+
+Thus, the key information must be provided manually as an own data object in R. 
+However, `traitdataform`  assists in creating an own reference list of traits, a so called 'thesaurus', that will be used to feed trait definitions, units or identifiers into the dataset. 
+
+The function to create an object of class 'thesaurus' is `as.thesaurus()` and deals with several objects created by `as.trait()`. 
+The ETS provides a [set of terms to describe trait concepts](https://terminologies.gfbio.org/terms/ets/pages/#terms-for-trait-definitions) which can be provided as an input parameter to `as.traits()`.
+Using the `as.trait()` function allows assigning flexible trait definition while ensuring compliance with the terms of the traitdata standard outlined above. It also allows building a library of trait definitions where single traits can be reused in multiple projects.  
+
+```{r}
+as.trait("body_length",
+         expectedUnit = "mm", valueType = "numeric",
+         traitDescription = "The known longest dimension of the physical structure of organisms",
+         identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Body_length",
+         author = "Maggenti and Maggenti, 2005",
+         broaderTerm = c("http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Body_dimension"),
+         narrowerTerm = c("http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Female_body_length",
+                          "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Male_body_length")
+         )
+```
+
+E.g. if *all* of the traits reported in your dataset refer to a definition published under a publicly available identifier, the thesaurus could be created like this:  
+
+```{r}
+thesaurus1 <- as.thesaurus(
+          body_length = as.trait("body_length",
+                  expectedUnit = "mm", valueType = "numeric",
+                  identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Body_length"),
+          antenna_length = as.trait("antenna_length",
+                  expectedUnit = "mm", valueType = "numeric",
+                  identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Antenna_length"),
+          metafemur_length = as.trait("femur_length",
+                  expectedUnit = "mm", valueType = "numeric",
+                  identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Femur_length"),
+          eyewidth_corr = as.trait("eye_diameter",
+                  expectedUnit = "mm", valueType = "numeric",
+                  identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Eye_diameter")
+        )
+```
+
+Alternatively, a thesaurus can be created from a `data.frame`, which might be easier if only trait name and identifier are to be provided and more specific trait definitions are not to be stored in the R object. 
+
+```{r}
+thesaurus1 <- as.thesaurus(data.frame(
+                      trait = c("body_length",  "antenna_length", "metafemur_length", "eyewidth_corr"),
+                      identifier = paste0("http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=", 
+                                          c("Body_length", "Antenna_length", "Femur_length", "Eye_diameter")), 
+                      valueType = c("numeric"),
+                      expectedUnit = "mm")
+)
+```
+
+To transfer the user-provided traits and trait values into standardised values, the function `standardize_traits()` merges the data table with a reference table of trait definitions to produce values of a compliant format. 
+
+```{r, message=FALSE, warning=FALSE}
+dataset1Std <- standardize_traits(dataset1, thesaurus1)
+head(dataset1Std)
+```
+
+The output table now contains a duplicate record of the originally provided trait measurements (in `traitName`, `traitValue` and `traitUnit`) and now being standardised into target terms and units as requested by the thesaurus. 
+
+
+### refer to own trait definitions
+
+If no published trait concept can be referenced, trait-datasets should be accompanied by a dataset-specific thesaurus.
+Ideally this is stored as an asset along with your trait dataset in the same data publication or in a separate publication. 
+This can be a csv or txt file, or a website providing direct and stable links to each trait definition. 
+
+This reference file should contain at least the following fields for each trait concept: 
+
+- `trait` should be a short descriptive name. No spaces should be used. Rather use a scheme with underscore or capital letters to highlight multiple words (e.g. 'body_length' or 'bodyLenght').
+- `traitDescription`: a detailed and unambiguous, human readable definition.
+- `valueType` to specify the expected kind of entries. Set it to 'numeric' for quantitative traits, 'integer' for counts or ordinal traits, 'character' for trait values that are provided as free text, 'factor' for traits that take one of few non-ordinal levels, 'logical' for binary/boolean entries (yes/no).  
+  - For *numeric traits*, the parameter `expectedUnit` should provide the expected unit for the trait. The R script will then try to convert trait values into this unit. 
+  - for *categorical traits* of kind 'factor' or 'integer', the field `factorLevels` should contain a list the valid factorial traits separated by semicolon. In case of ordinal traits, the order must be precisely corresponding to the number of possible integer values. 
+- `comments` may contain examples and clarifications
+-  optionally, `identifier` may specify an alphanumeric ID for the specific use in your dataset, but this function is also covered by having defined unambiguous trait labels in field `trait` which recur in field `traitName` of the main dataset. 
+
+Refer to the [ETS set of terms to describe trait concepts](https://terminologies.gfbio.org/terms/ets/pages/#terms-for-trait-definitions)) for further definitions of these terms, as well as the [best practice guidelines for trait-data publications](https://terminologies.gfbio.org/terms/ets/pages/bestpractice.html). 
+
+
+```{r}
+# M. Gossner, Martin; K. Simons, Nadja; Höck, Leonhard; W. Weisser, Wolfgang
+# (2016): Morphometric measures of Heteroptera sampled in grasslands across
+# three regions of Germany. figshare.
+# https://doi.org/10.6084/m9.figshare.c.3307611.v1 
+# following the definitions in data publication 
+# http://www.esapubs.org/archive/ecol/E096/102/metadata.php
+
+thesaurus2 <-  as.thesaurus(
+    Body_length = as.trait("Body_length", identifier = "t1",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "From the tip of the head to the end of the abdomen"),
+    Body_width = as.trait("Body_width", identifier = "t2",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Widest part of the body"),
+    Body_height = as.trait("Body_height",identifier = "t3",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Thickest part of the body"),
+    Thorax_length = as.trait("Thorax_length", identifier = "t4",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Longest part of the pronotum"),
+    Thorax_width = as.trait("Thorax_width", identifier = "t5",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Widest part of the pronotum"),
+    Head_width = as.trait("Head_width", identifier = "t6",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Widest part of the head including eyes"),
+    Eye_width = as.trait("Eye_width", identifier = "t7",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Widest part of the left eye"),
+    Antenna_Seg1 = as.trait("Antenna_Seg1", identifier = "t8",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of first antenna segment",
+                            broaderTerm = "http://ecologicaltraitdata.github.io/TraitDataList/Antenna_length"),
+    Antenna_Seg2 = as.trait("Antenna_Seg2", identifier = "t9",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of second antenna segment",
+                            broaderTerm = "http://ecologicaltraitdata.github.io/TraitDataList/Antenna_length"),
+    Antenna_Seg3 = as.trait("Antenna_Seg3", identifier = "t10",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of third antenna segment",
+                            broaderTerm = "http://ecologicaltraitdata.github.io/TraitDataList/Antenna_length"),
+    Antenna_Seg4 = as.trait("Antenna_Seg4", identifier = "t11",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of fourth antenna segment",
+                            broaderTerm = "http://ecologicaltraitdata.github.io/TraitDataList/Antenna_length"),
+    Antenna_Seg5 = as.trait("Antenna_Seg5", identifier = "t12",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of fifth antenna segment (only Pentatomoidea)",
+                            broaderTerm = "http://ecologicaltraitdata.github.io/TraitDataList/Antenna_length"),
+    Front.Tibia_length = as.trait("Front.Tibia_length", identifier = "t13",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of the tibia of the foreleg"),
+    Mid.Tibia_length = as.trait("Mid.Tibia_length", identifier = "t14",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of the tibia of the mid leg",
+                            broaderTerm = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Tibia_length"),
+    Hind.Tibia_length = as.trait("Hind.Tibia_length", identifier = "t15",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of the tibia of the hind leg",
+                            broaderTerm = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Tibia_length"),
+    Front.Femur_length = as.trait("Front.Femur_length", identifier = "t16",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of the femur of the foreleg",
+                            broaderTerm = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Femur_length"),
+    Hind.Femur_length = as.trait("Hind.Femur_length", identifier = "t17",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of the femur of the hind leg",
+                            broaderTerm = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Femur_length"),
+    Front.Femur_width = as.trait("Front.Femur_width", identifier = "t18",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Width of the femur of the foreleg"),
+    Hind.Femur_width = as.trait("Hind.Femur_width", identifier = "t18",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Width of the femur of the hind leg"),
+    Rostrum_length = as.trait("Rostrum_length", identifier = "t19",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Length of the rostrum including all segments"),
+    Rostrum_width = as.trait("Rostrum_width", identifier = "t20",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Widest part of the rostrum"),
+    Wing_length = as.trait("Wing_length", identifier = "t21",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Longest part of the forewing",
+                            broaderTerm = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Wing"),
+    Wing_width = as.trait("Wing_width", identifier = "t22",
+                            expectedUnit = "mm", valueType = "numeric",
+                            traitDescription = "Widest part of the forewing",
+                            broaderTerm = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Wing")
+  )
+
+```
+
+Applying `standardize_traits()` will refer to this dataset-specific thesaurus and append it as an attribute to the R object.
+
+```{r, message=FALSE, warning=FALSE}
+dataset2Std <- standardize_traits(dataset2, thesaurus2)
+subset(dataset2Std, occurrenceID == 2)
+
+attributes(dataset2Std)$traits[,c("trait", "identifier","traitDescription","expectedUnit")]
+```
+
+
+
+# 3. Standardize taxa
+
+For taxon name standardisation, the function `standardize_taxa()` makes use of fuzzy matching algorithms provided by the package ['taxize' by Scott Chamberlain ](https://CRAN.R-project.org/package=taxize) to match the entries of column `scientificName` against the GBIF Backbone Taxonomy. 
+The result is written into a new column `scientificNameStd`. Additional columns comprise the order (for ambiguous names), the reported taxon rank, as well as a globally unique taxon ID which references the taxon to GBIF Backbone Taxonomy in a universal URI format.  
+
+If further layers of taxonomic information are desired as an output, the function takes the parameter `return`, which by default contains `c("taxonID", "scientificNameStd", "order", "taxonRank")`. Other specifications can be added here. 
+
+Note that for this to work, `scientificName` must contain a full account of the species name or higher taxon, no abbreviations (spaces or underscores are handled alright). 
+Note also, that taxon name mapping requires an internet connection and might take some time, depending on the length of your species list. 
+
+```{r, message=FALSE, warning=FALSE}
+dataset1Std <- standardize_taxa(dataset1)
+head(dataset1Std)
+
+```
+
+<!--
+## georeference standardization for Biodiversity Exploratories
+
+The traitdata standard has been developed within the Biodiversity Exploratories project (DFG ) which is a long-term assessment of plant and animal communities in three regions across Germany starting in 2008. Trait data extracted from one of the 300 project plots can be georeferenced using the function `standardize.exploratories()`. 
+
+To access the high-resolution location data, credentials to BEXIS will be requested. If credentials are incorrect or missing, only low-resolution geolocation can be extracted. 
+
+```{r, eval = FALSE}
+# dataset by Jule Mangels et al. 
+
+moths <- read.service(21247, dec = ",") 
+ 
+dataset5 <- as.traitdata(moths, taxa = "species", traits = c(body_mass =
+     "weight", wing_length = "wing_length", wing_width = "wing_width", wing_area =
+     "wing_area", wing_loading = "wing_loading"),
+   keep = c(locationID = "plot"))
+ 
+dataset5Std <- standardize.exploratories(dataset1)
+
+head(dataset5Std)
+```
+-->
+
+## Single-stroke standardization
+
+The functions `standardize_traits()` and `standardize_taxa()` are applied sequentially but not necessarily in that order. The output of the first step can be piped into the second step. 
+
+To make things even simpler, the functions for format conversion and standardization come with a wrapper function `standardize()`. Therefore it is possible to run the functions in a single-handed way, if all necessary parameters for the intermediate steps are provided. A single call will do, taking all the optional parameters described above. 
+
+```{r, message = FALSE, warning=FALSE, eval=FALSE}
+dataset1Std <- standardize(carabids,
+            thesaurus = thesaurus1,
+            taxa = "name_correct",
+            units = "mm",
+            keep = c(measurementDeterminedBy = "source_measurement")
+            )
+```
+
+As an alternative input pathway, all parameters to `standardize()` can be specified as attributes of the input object and will be found natively by the function. This allows for the specification of recipes for data integration for projects pulling data from multiple sources. 
+
+# 4. Working with trait-datasets
+
+## combine multiple traitdata tables
+
+After standardizing trait and taxon concepts into unified definitions and converting trait values into harmonized units, it is straightforward to combine multiple trait-dataset into one using `rbind()`. This can be applied before or after the standardisation process, depending on the use case. Use cases of merging data are:
+
+- you collected data from different sources and want to harmonize taxon and trait names: bring data in long-table format and merge into one data object, then harmonize taxa and units following a uniform standard
+- No unified trait list or taxon reference exists for the heterogeneous data assembled of different sources (e.g. because spanning many different taxa): Apply standardization to different reference systems before merging the datasets.
+
+The function call will append the data tables while merging the common columns and maintaining columns that are not present in all datasets (this might produce lots of NA). 
+The column `datasetID` will be added to keep track of the origin of the data. By default this column will contain the object names of the original datasets, but it can be replaced by more meaningful IDs using the parameter `datasetID`. 
+
+```{r, eval = FALSE}
+newdata <- rbind(dataset1Std, dataset2Std, 
+                datasetID = c("vanderplas15", "gossner15")
+              )
+```
+
+Note that the package provides a method for the base function `rbind()` that handles this merge. Documentation can be accessed via `?rbind.traitdata`. 
+
+## maintaining metadata
+
+The function will handle metadata information on the dataset level as described in the section 'Metadata' of the Traitdata Standard (e.g. `author` or `bibliographicCitation`) and add a column `datasetID` as well as  `datasetName` and `author` if those are provided in the parameter `metadata` of the `as.traitdata()` function call which creates the data. 
+The function `as.metadata()` provides a standard structure for this case. 
+
+```{r}
+metadata1 <- as.metadata(
+      datasetName = "Carabid traits",
+      datasetID = "carabids",
+      bibliographicCitation =  bibentry(
+        bibtype = "Article",
+        title = "Sensitivity of functional diversity metrics to sampling intensity",
+        journal = "Methods in Ecology and Evolution",
+        author = c(as.person("Fons van der Plas, Roel van Klink, Pete Manning, Han Olff, Markus Fischer")
+        ),
+        year = 2017,
+        doi = "10.1111/2041-210x.12728"
+      ),
+      author = "Fons van der Plas",
+      license = "http://creativecommons.org/publicdomain/zero/1.0/"
+       )
+
+dataset1 <- as.traitdata(carabids,
+  taxa = "name_correct",
+  thesaurus = thesaurus1,
+  units = "mm",
+  keep = c(datasetID = "source_measurement", measurementRemark = "note"),
+  metadata = metadata1
+)
+
+head(dataset1)
+```
+
+Note the use of the `bibentry()` function to create a formal bibliographic entry. Also note that this also affects the way how the dataset is printed into the R console. This facilitates for data users to acknowledge authorship and ownership of the data, while also providing a machine readable structure that can easily be accessed further down the line. 
+
+```{r}
+metadata2 <- as.metadata(
+  datasetName = "Heteroptera morphometry traits",
+  datasetID = "heteroptera",
+  bibliographicCitation =  bibentry(
+    bibtype = "Article",
+    title = "Morphometric measures of Heteroptera sampled in grasslands across three regions of Germany",
+    journal = "Ecology",
+    volume = 96,
+    issue = 4,
+    pages = 1154,
+    author = c(as.person("Martin M. Gossner , Nadja K. Simons, Leonhard Hoeck, Wolfgang W. Weisser")),
+    year = 2015,
+    doi = "10.1890/14-2159.1"
+  ),
+  author = "Martin M. Gossner",
+  license = "http://creativecommons.org/publicdomain/zero/1.0/"
+)
+
+dataset2 <- as.traitdata(heteroptera_raw,
+  taxa = "SpeciesID",
+  thesaurus = thesaurus2,
+  units = "mm",
+  keep = c(sex = "Sex", references = "Source", lifestage = "Wing_development"),
+  metadata =  metadata2
+)
+
+database <- rbind(dataset1, dataset2, 
+                datasetID = c("vanderplas17", "gossner15"), 
+                metadata_as_columns = TRUE
+                ) 
+
+head(database)
+```
+
+The detailed metadata information of both datasets (e.g. license and bibliographic citation) will be stored in the attributes of the dataset and displayed when calling it in R console. You can access the metadata via the `attributes()`  function. E.g.
+
+```{r}
+attributes(dataset1)$metadata$bibliographicCitation
+```
+
+
+## writing data recipes
+
+For projects compiling data from multiple sources, it is recommended best practice to refer to original raw data, potentially even by pulling them from their original repository, and make any changes and standardisation procedures script based in R. 
+If many field-based changes are necessary, you can refer to [lookup tables](https://nicercode.github.io/blog/2013-07-09-modifying-data-with-lookup-tables/) to keep the script slim. 
+
+`traitdataform` allows you to script all parameters required for the standardization call into the attributes of the R object. A script for a single data source can then look like this
+
+```{r, eval = FALSE}
+carabids <- utils::read.delim(url("https://datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt", 
+                                encoding = "UTF-8")
+                              )
+
+attr(carabids, 'metadata') <- traitdataform::as.metadata(
+      datasetName = "Carabid traits",
+      datasetID = "carabids",
+      bibliographicCitation =  utils::bibentry(
+        bibtype = "Article",
+        title = "Sensitivity of functional diversity metrics to sampling intensity",
+        journal = "Methods in Ecology and Evolution",
+        author = c(utils::as.person("Fons van der Plas, Roel van Klink, Pete Manning, Han Olff, Markus Fischer")
+        ),
+        year = 2017,
+        doi = "10.1111/2041-210x.12728"
+      ),
+      author = "Fons van der Plas",
+      license = "http://creativecommons.org/publicdomain/zero/1.0/"
+       )
+
+attr(carabids, 'thesaurus') <-  traitdataform:::as.thesaurus(
+          body_length = traitdataform:::as.trait("body_length",
+                              expectedUnit = "mm", valueType = "numeric",
+                              identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Body_length"),
+          antenna_length = traitdataform:::as.trait("antenna_length",
+                              expectedUnit = "mm", valueType = "numeric",
+                              identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Antenna_length"),
+          metafemur_length = traitdataform:::as.trait("femur_length",
+                              expectedUnit = "mm", valueType = "numeric",
+                              identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Femur_length"),
+          eyewidth_corr = traitdataform:::as.trait("eye_diameter",
+                              expectedUnit = "mm", valueType = "numeric",
+                              identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Eye_diameter")
+        )
+
+attr(carabids, 'taxa') <- "name_correct"
+attr(carabids, 'units') <- "mm"
+attr(carabids, 'keep') <-  c(measurementDeterminedBy = "source_measurement", measurementRemarks = "note")
+
+```
+
+When thus specified, the data can be re-formatted simply by calling `standardize(carabids)`. 
+
+<!--
+## add data layers
+
+When storing data, it might be advised to externalise repetitive entries in a separate datasheet and link to it via datasetID. In R, you can use the function `merge()` to map metadata information from a second data table into the core data table based on the datasetID. 
+
+```{r}
+#example for adding metadata as a table
+
+```
+
+
+## compile aggregate values
+
+The function `cast.traitdata()` rearranges the long-table format into the more intuitive wide-table or matrix format. This can be used to preview complex datasets or to perform calculations on multivariate values. 
+
+```{r, eval = FALSE}
+
+head(dataset3)
+
+dataset3wide <- cast.traitdata(dataset3)
+
+head(dataset3wide)
+ 
+```
+-->
+
+# 5. Writing data 
+
+The final step in converting trait data into a standardised format before uploading the file to a public file hosting service is saving them in a file format that is internationalized, portable and long-term accessible. 
+Internationalization refers to the file encoding ('UTF-8' should be used, 'ASCII' is possible for data with no special characters) as well as the use of decimal delimiters (highly recommended to use '.') and internationally accepted formatting standards for values such as dates (the international norm for date entries is  ISO 8601, i.e. "YYYY-MM-DD"). Portability means that the file can be opened on all operating systems (specifically important, the 'end of line' character) and does not rely on proprietary software (like MS Excel or database tools). Long-term accessibility is warranted by choosing a text-based file format (txt, csv or tsv) and by packaging the primary data with all necessary metadata.
+
+The base R function `write.table()` gives full control over these parameters and should be used to export trait-data.
+
+```{r, eval = FALSE}
+write.table(dataset1Std, file = "carabids_std.csv", 
+            sep = ",", dec = ".", quote = TRUE, eol = "\r", row.names = FALSE)
+```
+
+Along with these primary data, you should make any ancillary data table available along with the data, e.g. the metadata in a human readable form, as well as the lookup table of traits and taxa:
+
+```{r, eval = FALSE}
+capture.output(attributes(dataset1Std)$metadata, file = "metadata.txt")
+
+write.table(attributes(dataset1Std)$traits, file = "traits.csv", 
+            sep = ",", dec = ".", quote = TRUE, eol = "\r", row.names = FALSE)
+write.table(attributes(dataset1Std)$taxonomy, file = "taxa.csv", 
+            sep = ",", dec = ".", quote = TRUE, eol = "\r", row.names = FALSE)
+```
+
+When publishing the trait data on file servers like Figshare or Zenodo, those files should be uploaded in a single file repository (e.g. in a zip file). R does the archiving for you using `zip()`: 
+
+```{r, eval = FALSE}
+zip("carabids_std.zip", c("carabids_std.csv", "metadata.txt", "traits.csv", "taxa.csv") )
+```
+
+More advise for publishing trait data in a standardised way can be found in our ['Best practice examples for primary data publication'](https://ecologicaltraitdata.github.io/ETS/bestpractice.html) [@schneider18]. 
+
+
+# References
+
+
+
