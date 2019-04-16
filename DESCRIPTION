@@ -1,8 +1,8 @@
 Package: traitdataform
 Type: Package
 Title: Formatting and Harmonizing Ecological Trait-Data
-Version: 0.5.2
-Date: 2018-12-19
+Version: 0.5.3
+Date: 2019-04-11
 Authors@R: c(person("Florian D.", "Schneider",, "florian.dirk.schneider@gmail.com", role = c("aut", "cre"), 
   comment = c(ORCID = "0000-0002-1494-5684")), 
     person("Caterina", "Penone", role = c("ctb"), comment = c(ORCID = "0000-0002-8170-6659")),
@@ -28,7 +28,7 @@ RoxygenNote: 6.1.1
 Encoding: UTF-8
 Suggests: knitr, rmarkdown, testthat
 NeedsCompilation: no
-Packaged: 2018-12-19 08:57:26 UTC; Flo
+Packaged: 2019-04-11 09:46:09 UTC; Flo
 Author: Florian D. Schneider [aut, cre]
     (<https://orcid.org/0000-0002-1494-5684>),
   Caterina Penone [ctb] (<https://orcid.org/0000-0002-8170-6659>),
@@ -38,4 +38,4 @@ Author: Florian D. Schneider [aut, cre]
   Markus J. Ankenbrand [ctb]
 Maintainer: Florian D. Schneider <florian.dirk.schneider@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-12-30 23:10:02 UTC
+Date/Publication: 2019-04-16 16:42:46 UTC
