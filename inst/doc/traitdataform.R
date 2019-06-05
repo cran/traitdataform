@@ -31,7 +31,7 @@ heteroptera_raw <-  read.delim(url("https://ndownloader.figshare.com/files/56338
                                          encoding = "windows-1252"),
                                     stringsAsFactors=TRUE)
 
-# Data pulication: M. Gossner, Martin; K. Simons, Nadja; Höck, Leonhard; W.
+# Data pulication: M. Gossner, Martin; K. Simons, Nadja; Hoeck, Leonhard; W.
 # Weisser, Wolfgang (2016): Morphometric measures of Heteroptera sampled in
 # grasslands across three regions of Germany. figshare.
 # https://doi.org/10.6084/m9.figshare.c.3307611.v1
@@ -138,7 +138,7 @@ dataset1Std <- standardize_traits(dataset1, thesaurus1)
 head(dataset1Std)
 
 ## ------------------------------------------------------------------------
-# M. Gossner, Martin; K. Simons, Nadja; Höck, Leonhard; W. Weisser, Wolfgang
+# M. Gossner, Martin; K. Simons, Nadja; Hoeck, Leonhard; W. Weisser, Wolfgang
 # (2016): Morphometric measures of Heteroptera sampled in grasslands across
 # three regions of Germany. figshare.
 # https://doi.org/10.6084/m9.figshare.c.3307611.v1 
