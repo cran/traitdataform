@@ -9,7 +9,7 @@ library(traitdataform)
 ## ------------------------------------------------------------------------
 # pulling data from van der Plas F, van Klink R, Manning P, Olff H, Fischer M (2017) Sensitivity of functional diversity metrics to sampling intensity. Methods in Ecology and Evolution 8(9): 1072-1080. https://doi.org/10.1111/2041-210x.12728
 
-carabids <- read.delim("https://datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt")
+carabids <- read.delim("https://v1.datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt")
 
 
 ## ---- warning=FALSE------------------------------------------------------
@@ -332,7 +332,7 @@ head(database)
 attributes(dataset1)$metadata$bibliographicCitation
 
 ## ---- eval = FALSE-------------------------------------------------------
-#  carabids <- utils::read.delim(url("https://datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt",
+#  carabids <- utils::read.delim(url("https://v1.datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt",
 #                                  encoding = "UTF-8")
 #                                )
 #  

@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -95,7 +96,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -319,7 +320,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <li>Merging and handling compiled trait-data, while keeping track of the metadata for each original dataset (see section <a href="#working-with-trait-datasets">4. Working with trait-datasets</a>)</li>
 <li>saving trait dataset into a desired format using templates (e.g. for project-specific databases or online repositories) (see section <a href="#writing-data">5. Writing data</a>)</li>
 </ol>
-<p>This vignette contains step-by step instructions for transferring own data into a standardized trait-dataset for upload to public databases. See Schneider et al. 2018 ‘Towards an Ecological Trait-data Standard’ (pre-print on biorxiv.org, doi: <a href="http://dx.doi.org/10.1101/328302">10.1101/328302</a> ) for a discussion of the rationale.</p>
+<p>This vignette contains step-by step instructions for transferring own data into a standardized trait-dataset for upload to public databases. See Schneider et al. 2019 Towards an Ecological Trait-data Standard <em>Methods in Ecology and Evolution</em> DOI: <a href="https://doi.org/10.1111/2041-210X.13288">10.1111/2041-210X.13288</a>) for a discussion of the rationale.</p>
 <hr />
 <div id="reading-data" class="section level1">
 <h1>1. Reading data</h1>
@@ -331,7 +332,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>If reading files from a file repository, you can refer to the URL directly, e.g. </p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="co"># pulling data from van der Plas F, van Klink R, Manning P, Olff H, Fischer M (2017) Sensitivity of functional diversity metrics to sampling intensity. Methods in Ecology and Evolution 8(9): 1072-1080. https://doi.org/10.1111/2041-210x.12728</span></a>
 <a class="sourceLine" id="cb2-2" title="2"></a>
-<a class="sourceLine" id="cb2-3" title="3">carabids &lt;-<span class="st"> </span><span class="kw">read.delim</span>(<span class="st">&quot;https://datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt&quot;</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb2-3" title="3">carabids &lt;-<span class="st"> </span><span class="kw">read.delim</span>(<span class="st">&quot;https://v1.datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt&quot;</span>)</a></code></pre></div>
 <p>Most trait data are stored in one of the following two formats:</p>
 <ul>
 <li><strong>species<span class="math inline">\(\times\)</span>trait matrix</strong> : a single account of a trait value for each species (in rows) for a couple of different traits (in columns). No replicates of species are reported. This is the most likely format for literature data, where aggregate measurements or facts for entire species have been collated into a single lookup table.</li>
@@ -1237,7 +1238,7 @@ head(dataset5Std)
 <h2>writing data recipes</h2>
 <p>For projects compiling data from multiple sources, it is recommended best practice to refer to original raw data, potentially even by pulling them from their original repository, and make any changes and standardisation procedures script based in R. If many field-based changes are necessary, you can refer to <a href="https://nicercode.github.io/blog/2013-07-09-modifying-data-with-lookup-tables/">lookup tables</a> to keep the script slim.</p>
 <p><code>traitdataform</code> allows you to script all parameters required for the standardization call into the attributes of the R object. A script for a single data source can then look like this</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">carabids &lt;-<span class="st"> </span>utils<span class="op">::</span><span class="kw">read.delim</span>(<span class="kw">url</span>(<span class="st">&quot;https://datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt&quot;</span>, </a>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">carabids &lt;-<span class="st"> </span>utils<span class="op">::</span><span class="kw">read.delim</span>(<span class="kw">url</span>(<span class="st">&quot;https://v1.datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt&quot;</span>, </a>
 <a class="sourceLine" id="cb20-2" title="2">                                <span class="dt">encoding =</span> <span class="st">&quot;UTF-8&quot;</span>)</a>
 <a class="sourceLine" id="cb20-3" title="3">                              )</a>
 <a class="sourceLine" id="cb20-4" title="4"></a>
@@ -1352,6 +1353,9 @@ head(dataset3wide)
 </div>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
