@@ -4,8 +4,13 @@
 \alias{mutate.traitdata}
 \title{Mutate traits within a traitdata object.}
 \usage{
-mutate.traitdata(.data, ..., values = "traitValue",
-  traits = "traitName", units = "traitUnit")
+mutate.traitdata(
+  .data,
+  ...,
+  values = "traitValue",
+  traits = "traitName",
+  units = "traitUnit"
+)
 }
 \arguments{
 \item{.data}{the traitdata object to transform}
@@ -68,7 +73,6 @@ updated <- mutate.traitdata(dataset3, predator = Feeding_guild == "c" )
 head(updated[updated$traitName == "predator",])
 
 levels(updated$traitName)
-}
 
 ##
 
@@ -90,4 +94,5 @@ updated <- mutate.traitdata(dataset2,
                             Wingload = Wing_length*Wing_width/Body_volume)
 
 head(updated[updated$traitName \%in\% c( "Body_volume"),])
+}
 }

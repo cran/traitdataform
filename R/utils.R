@@ -52,7 +52,6 @@ read.service <- function(datasetid,
 #---- returns a data.frame array                      -----------
 #----------------------------------------------------------
 
-#' @inheritParams read.service
 #' @rdname read.service
 #' @keywords internal
 
@@ -123,4 +122,22 @@ fixlogical <- function(x, output = "logical", categories = c("No", "Yes")) {
 
 is_unit <- function(x) { 
   !c("simpleError") %in% class(tryCatch(as_units(x), error  = function(e) e))
+}
+
+
+
+#' Locale-independent factor conversion
+#'
+#' @param x a vector 
+#' 
+#' @keywords internal
+#' @return the same vector, but with any factorial content or colums with repeating character strings converted to factors, applying a locale-independent sorting. 
+#' @note Only for internal application in [as.traitdata()] This deals with the problem described by Kurt Hornik [(here)](https://developer.r-project.org/Blog/public/2020/02/16/stringsasfactors/index.html) for changes coming in R 4.0.0. In traitdataform, this concerns the locale-dependence of taxon and trait name sorting when calling published trait-datasets. For traits, the sorting order of factor levels will be superimposed by the order given in the thesaurus specification (if provided).
+
+as_factor_clocale <- function(x) {
+      lc_collate <- Sys.getlocale("LC_COLLATE") 
+      Sys.setlocale("LC_COLLATE", "C")
+      x <- factor(as.character(x)) 
+      Sys.setlocale("LC_COLLATE", lc_collate)
+  return(x)      
 }

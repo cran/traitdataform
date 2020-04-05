@@ -1,8 +1,8 @@
 Package: traitdataform
 Type: Package
 Title: Formatting and Harmonizing Ecological Trait-Data
-Version: 0.5.6
-Date: 2019-10-01
+Version: 0.5.7
+Date: 2020-04-04
 Authors@R: c(person("Florian D.", "Schneider",, "florian.dirk.schneider@gmail.com", role = c("aut", "cre"), 
   comment = c(ORCID = "0000-0002-1494-5684")), 
     person("Caterina", "Penone", role = c("ctb"), comment = c(ORCID = "0000-0002-8170-6659")),
@@ -24,11 +24,11 @@ URL: https://EcologicalTraitData.github.io/traitdataform,
         https://github.com/EcologicalTraitData/traitdataform
 BugReports: https://github.com/EcologicalTraitData/traitdataform/issues
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 Encoding: UTF-8
 Suggests: knitr, rmarkdown, testthat
 NeedsCompilation: no
-Packaged: 2019-10-01 12:43:35 UTC; Flo
+Packaged: 2020-04-05 07:00:00 UTC; Flo
 Author: Florian D. Schneider [aut, cre]
     (<https://orcid.org/0000-0002-1494-5684>),
   Caterina Penone [ctb] (<https://orcid.org/0000-0002-8170-6659>),
@@ -38,4 +38,4 @@ Author: Florian D. Schneider [aut, cre]
   Markus J. Ankenbrand [ctb]
 Maintainer: Florian D. Schneider <florian.dirk.schneider@gmail.com>
 Repository: CRAN
-Date/Publication: 2019-10-01 18:20:05 UTC
+Date/Publication: 2020-04-05 07:30:03 UTC

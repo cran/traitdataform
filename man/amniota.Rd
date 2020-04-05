@@ -10,7 +10,7 @@ Morgan (2016): An amniote life-history database to perform comparative
 analyses with birds, mammals, and reptiles.
 http://esapubs.org/archive/ecol/E096/269/}
 
-\href{http://creativecommons.org/publicdomain/zero/1.0/}{Creative Commons
+\href{https://creativecommons.org/publicdomain/zero/1.0/}{Creative Commons
 0}. To the extent possible under law, the authors have waived all copyright
 and related or neighboring rights to this data.
 }
@@ -47,10 +47,14 @@ at least one life-history parameter for 21 322 species of birds, mammals,
 and reptiles.
 }
 \seealso{
-Other rawdata: \code{\link{amphibio}},
-  \code{\link{arthropodtraits}}, \code{\link{carabids}},
-  \code{\link{heteroptera_raw}}, \code{\link{mammaldiet}},
-  \code{\link{pantheria}}, \code{\link{pulldata}}
+Other rawdata: 
+\code{\link{amphibio}},
+\code{\link{arthropodtraits}},
+\code{\link{carabids}},
+\code{\link{heteroptera_raw}},
+\code{\link{mammaldiet}},
+\code{\link{pantheria}},
+\code{\link{pulldata}()}
 }
 \author{
 Nathan P. Myhrvold, Elita Baldridge, Benjamin Chan, Dhileep Sivam,

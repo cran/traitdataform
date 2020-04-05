@@ -3,7 +3,8 @@
 \name{carabids}
 \alias{carabids}
 \title{Carabid morphological traits}
-\format{A data frame containing following columns:
+\format{
+A data frame containing following columns:
 \itemize{
 \item name_correct = species name
 \item source_measurement = researcher who performed measurement;
@@ -18,10 +19,11 @@ linear model in which femur length is explained by body length);
 model in which eye length is explained by body length)
 \item resid_antenna = residual antenna length in mm (i.e. residual
 from linear model in which antenna length is explained by body length)
-}}
+}
+}
 \source{
 \url{http://dx.doi.org/10.5061/dryad.53ds2};
-\href{http://creativecommons.org/publicdomain/zero/1.0/}{Creative Commons
+\href{https://creativecommons.org/publicdomain/zero/1.0/}{Creative Commons
 0}. To the extent possible under law, the authors have waived all copyright
 and related or neighboring rights to this data.
 }
@@ -43,10 +45,14 @@ Additionally, please cite the Dryad data package:
 intensity. Dryad Digital Repository. https://doi.org/10.5061/dryad.1fn46 }
 }
 \seealso{
-Other rawdata: \code{\link{amniota}},
-  \code{\link{amphibio}}, \code{\link{arthropodtraits}},
-  \code{\link{heteroptera_raw}}, \code{\link{mammaldiet}},
-  \code{\link{pantheria}}, \code{\link{pulldata}}
+Other rawdata: 
+\code{\link{amniota}},
+\code{\link{amphibio}},
+\code{\link{arthropodtraits}},
+\code{\link{heteroptera_raw}},
+\code{\link{mammaldiet}},
+\code{\link{pantheria}},
+\code{\link{pulldata}()}
 }
 \author{
 Fons van der Plas, R. van Klink, P. Manning, H. Olff, M. Fischer

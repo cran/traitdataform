@@ -1,18 +1,18 @@
-## ---- echo = FALSE, warning= FALSE, message=FALSE------------------------
+## ---- echo = FALSE, warning= FALSE, message=FALSE-----------------------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 library(traitdataform)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  carabids <- read.table("../../data/carabid traits final.txt", header = TRUE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # pulling data from van der Plas F, van Klink R, Manning P, Olff H, Fischer M (2017) Sensitivity of functional diversity metrics to sampling intensity. Methods in Ecology and Evolution 8(9): 1072-1080. https://doi.org/10.1111/2041-210x.12728
 
-carabids <- read.delim("https://v1.datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt")
+carabids <- read.delim("https://datadryad.org/stash/downloads/file_stream/24267", stringsAsFactors = FALSE)
 
 
-## ---- warning=FALSE------------------------------------------------------
+## ---- warning=FALSE-----------------------------------------------------------
 dataset1 <- as.traitdata(carabids, 
                          taxa = "name_correct",
                          traits = c("body_length", 
@@ -24,7 +24,7 @@ dataset1 <- as.traitdata(carabids,
 
 head(dataset1)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 if(!l10n_info()$`UTF-8`) {Sys.setlocale("LC_CTYPE", "en_US.UTF-8")}
 
 heteroptera_raw <-  read.delim(url("https://ndownloader.figshare.com/files/5633883", 
@@ -52,7 +52,7 @@ dataset2 <- as.traitdata(heteroptera_raw,
 # show different trait measurements for same occurrence/individual
 subset(dataset2, occurrenceID == "5" ) 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dataset2 <- as.traitdata(heteroptera_raw,
               traits = c("Body_length", "Body_width", "Body_height", "Thorax_length",
                          "Thorax_width", "Head_width", "Eye_width", "Antenna_Seg1",
@@ -68,7 +68,7 @@ dataset2 <- as.traitdata(heteroptera_raw,
 
 head(dataset2) 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dataset2 <- as.traitdata(heteroptera_raw,
               traits = c("Body_length", "Body_width", "Body_height", "Thorax_length",
                          "Thorax_width", "Head_width", "Eye_width", "Antenna_Seg1",
@@ -89,7 +89,7 @@ dataset2 <- as.traitdata(heteroptera_raw,
 
 head(dataset2)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dataset2 <- mutate.traitdata(dataset2, 
                             Body_shape = Body_length/Body_width, 
                             Body_volume = Body_length*Body_width*Body_height,
@@ -97,7 +97,7 @@ dataset2 <- mutate.traitdata(dataset2,
 
 head(dataset2[dataset2$traitName %in% c("Body_shape", "Body_volume", "Wingload"),])
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 as.trait("body_length",
          expectedUnit = "mm", valueType = "numeric",
          traitDescription = "The known longest dimension of the physical structure of organisms",
@@ -108,7 +108,7 @@ as.trait("body_length",
                           "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Male_body_length")
          )
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 thesaurus1 <- as.thesaurus(
           body_length = as.trait("body_length",
                   expectedUnit = "mm", valueType = "numeric",
@@ -124,7 +124,7 @@ thesaurus1 <- as.thesaurus(
                   identifier = "http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=Eye_diameter")
         )
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 thesaurus1 <- as.thesaurus(data.frame(
                       trait = c("body_length",  "antenna_length", "metafemur_length", "eyewidth_corr"),
                       identifier = paste0("http://t-sita.cesab.org/BETSI_vizInfo.jsp?trait=", 
@@ -133,11 +133,11 @@ thesaurus1 <- as.thesaurus(data.frame(
                       expectedUnit = "mm")
 )
 
-## ---- message=FALSE, warning=FALSE---------------------------------------
+## ---- message=FALSE, warning=FALSE--------------------------------------------
 dataset1Std <- standardize_traits(dataset1, thesaurus1)
 head(dataset1Std)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # M. Gossner, Martin; K. Simons, Nadja; Hoeck, Leonhard; W. Weisser, Wolfgang
 # (2016): Morphometric measures of Heteroptera sampled in grasslands across
 # three regions of Germany. figshare.
@@ -229,18 +229,18 @@ thesaurus2 <-  as.thesaurus(
   )
 
 
-## ---- message=FALSE, warning=FALSE---------------------------------------
+## ---- message=FALSE, warning=FALSE--------------------------------------------
 dataset2Std <- standardize_traits(dataset2, thesaurus2)
 subset(dataset2Std, occurrenceID == 2)
 
 attributes(dataset2Std)$traits[,c("trait", "identifier","traitDescription","expectedUnit")]
 
-## ---- message=FALSE, warning=FALSE---------------------------------------
+## ---- message=FALSE, warning=FALSE--------------------------------------------
 dataset1Std <- standardize_taxa(dataset1)
 head(dataset1Std)
 
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  # dataset by Jule Mangels et al.
 #  
 #  moths <- read.service(21247, dec = ",")
@@ -254,7 +254,7 @@ head(dataset1Std)
 #  
 #  head(dataset5Std)
 
-## ---- message = FALSE, warning=FALSE, eval=FALSE-------------------------
+## ---- message = FALSE, warning=FALSE, eval=FALSE------------------------------
 #  dataset1Std <- standardize(carabids,
 #              thesaurus = thesaurus1,
 #              taxa = "name_correct",
@@ -262,12 +262,12 @@ head(dataset1Std)
 #              keep = c(measurementDeterminedBy = "source_measurement")
 #              )
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  newdata <- rbind(dataset1Std, dataset2Std,
 #                  datasetID = c("vanderplas15", "gossner15")
 #                )
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 metadata1 <- as.metadata(
       datasetName = "Carabid traits",
       datasetID = "carabids",
@@ -294,7 +294,7 @@ dataset1 <- as.traitdata(carabids,
 
 head(dataset1)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 metadata2 <- as.metadata(
   datasetName = "Heteroptera morphometry traits",
   datasetID = "heteroptera",
@@ -328,11 +328,11 @@ database <- rbind(dataset1, dataset2,
 
 head(database)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 attributes(dataset1)$metadata$bibliographicCitation
 
-## ---- eval = FALSE-------------------------------------------------------
-#  carabids <- utils::read.delim(url("https://v1.datadryad.org/bitstream/handle/10255/dryad.134418/carabid%20traits%20final.txt",
+## ---- eval = FALSE------------------------------------------------------------
+#  carabids <- utils::read.delim(url("https://datadryad.org/stash/downloads/file_stream/24267",
 #                                  encoding = "UTF-8")
 #                                )
 #  
@@ -372,11 +372,11 @@ attributes(dataset1)$metadata$bibliographicCitation
 #  attr(carabids, 'keep') <-  c(measurementDeterminedBy = "source_measurement", measurementRemarks = "note")
 #  
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #example for adding metadata as a table
 
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  
 #  head(dataset3)
 #  
@@ -385,11 +385,11 @@ attributes(dataset1)$metadata$bibliographicCitation
 #  head(dataset3wide)
 #  
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  write.table(dataset1Std, file = "carabids_std.csv",
 #              sep = ",", dec = ".", quote = TRUE, eol = "\r", row.names = FALSE)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  capture.output(attributes(dataset1Std)$metadata, file = "metadata.txt")
 #  
 #  write.table(attributes(dataset1Std)$traits, file = "traits.csv",
@@ -397,6 +397,6 @@ attributes(dataset1)$metadata$bibliographicCitation
 #  write.table(attributes(dataset1Std)$taxonomy, file = "taxa.csv",
 #              sep = ",", dec = ".", quote = TRUE, eol = "\r", row.names = FALSE)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  zip("carabids_std.zip", c("carabids_std.csv", "metadata.txt", "traits.csv", "taxa.csv") )
 

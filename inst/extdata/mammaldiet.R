@@ -1,8 +1,9 @@
 # for roxygen2 documentation please edit file R/data.R!
 
-mammaldiet <- utils::read.csv("http://v1.datadryad.org/bitstream/handle/10255/dryad.64565/MammalDIET_v1.0.txt?sequence=1",
+mammaldiet <- utils::read.csv("https://datadryad.org/stash/downloads/file_stream/21802",
                               sep = "\t",
-                              fileEncoding = "UTF-8"
+                              fileEncoding = "UTF-8",
+                              stringsAsFactors = FALSE
                               )
 
 attr(mammaldiet, 'citeAs') <- utils::bibentry(
