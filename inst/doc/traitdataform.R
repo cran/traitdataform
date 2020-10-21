@@ -31,7 +31,7 @@ heteroptera_raw <-  read.delim(url("https://ndownloader.figshare.com/files/56338
                                          encoding = "windows-1252"),
                                     stringsAsFactors=TRUE)
 
-# Data pulication: M. Gossner, Martin; K. Simons, Nadja; Hoeck, Leonhard; W.
+# Data publication: M. Gossner, Martin; K. Simons, Nadja; Hoeck, Leonhard; W.
 # Weisser, Wolfgang (2016): Morphometric measures of Heteroptera sampled in
 # grasslands across three regions of Germany. figshare.
 # https://doi.org/10.6084/m9.figshare.c.3307611.v1
@@ -95,7 +95,7 @@ dataset2 <- mutate.traitdata(dataset2,
                             Body_volume = Body_length*Body_width*Body_height,
                             Wingload = Wing_length*Wing_width/Body_volume)
 
-head(dataset2[dataset2$traitName %in% c("Body_shape", "Body_volume", "Wingload"),])
+head(dataset2[dataset2$verbatimTraitName %in% c("Body_shape", "Body_volume", "Wingload"),])
 
 ## -----------------------------------------------------------------------------
 as.trait("body_length",
