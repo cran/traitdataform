@@ -1,3 +1,20 @@
+# traitdataform 0.6.5
+
+- update Rd documentation pages to include return value
+
+# traitdataform 0.6.4
+
+- fix tidyverse URL in README
+
+# traitdataform 0.6.3
+
+- fix: reference to doi in Rd documentation syntax
+
+# traitdataform 0.6.2
+
+- update call to package `units` (pull request #42 by Iñaki Ucar)
+- update new taxon names in tests 
+
 # traitdataform 0.6.1
 
 - fix to comply to CRAN policy: Packages which use Internet resources should fail gracefully with an informative message if the resource is not available or has changed (and not give a check warning nor error). 

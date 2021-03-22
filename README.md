@@ -1,6 +1,6 @@
 # Package 'traitdataform': Formatting and Harmonizing Ecological Trait-Data 
 
-[![lifecycle](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable) 
+[![lifecycle](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable) 
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Build Status](https://travis-ci.com/EcologicalTraitData/traitdataform.svg?branch=master)](https://travis-ci.com/EcologicalTraitData/traitdataform)
 [![CRAN status](https://www.r-pkg.org/badges/version/traitdataform)](https://cran.r-project.org/package=traitdataform)
@@ -107,11 +107,11 @@ We are aiming to provide the following features in future iterations of the pack
 
 ## Cite as
 
-Schneider, F.D. (2020) traitdataform - harmonizing ecological trait data in R, v0.6.1, DOI: [10.5281/zenodo.1489527](http://dx.doi.org/10.5281/zenodo.1489527) http://ecologicaltraitdata.github.io/traitdataform
+Schneider, F.D. (2021) traitdataform - harmonizing ecological trait data in R, v0.6.5, DOI: [10.5281/zenodo.1489527](http://dx.doi.org/10.5281/zenodo.1489527) http://ecologicaltraitdata.github.io/traitdataform
 
 ## License
 
-Copyright (c) 2020 F.D. Schneider, florian.dirk.schneider@gmail.com
+Copyright (c) 2021 F.D. Schneider, florian.dirk.schneider@gmail.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

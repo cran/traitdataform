@@ -5,7 +5,7 @@
 \alias{heteroptera}
 \title{Heteroptera morphometry traits}
 \source{
-\url{https://figshare.com/articles/Data_Paper_Data_Paper/3561936};
+\url{https://figshare.com/articles/dataset/Data_Paper_Data_Paper/3561936};
 \href{https://creativecommons.org/publicdomain/zero/1.0/}{Creative Commons
 0}. To the extent possible under law, the authors have waived all copyright
 and related or neighboring rights to this data.
@@ -14,6 +14,8 @@ and related or neighboring rights to this data.
 The dataset \code{heteropteraRaw} contains multiple observations of
 each species (occurence table). The dataset \code{heteroptera} is a
 compiled species-trait matrix.
+
+This is a data object. provides instructions for \code{pulldata()}.
 }
 \description{
 Morphometric measures of Heteroptera sampled in grasslands across three
@@ -63,7 +65,7 @@ regions of Germany. Ecology 96:1154-1154.
 \enumerate{
 \item Morphometric measures of Heteroptera sampled in grasslands across three
 regions of Germany. figshare.
-https://doi.org/10.6084/m9.figshare.c.3307611.v1
+doi: \doi{10.6084/m9.figshare.c.3307611.v1}
 }
 }
 
