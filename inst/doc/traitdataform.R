@@ -6,11 +6,11 @@ library(traitdataform)
 ## ---- eval = FALSE, warning=FALSE, error=FALSE--------------------------------
 #  carabids <- read.table("../../data/carabid traits final.txt", header = TRUE)
 
-## ---- warning=FALSE, error=FALSE----------------------------------------------
-# pulling data from van der Plas F, van Klink R, Manning P, Olff H, Fischer M (2017) Sensitivity of functional diversity metrics to sampling intensity. Methods in Ecology and Evolution 8(9): 1072-1080. https://doi.org/10.1111/2041-210x.12728
-
-carabids <- read.delim("https://datadryad.org/stash/downloads/file_stream/23901", stringsAsFactors = FALSE)
-
+## ---- eval = FALSE, warning=FALSE, error=FALSE--------------------------------
+#  # pulling data from van der Plas F, van Klink R, Manning P, Olff H, Fischer M (2017) Sensitivity of functional diversity metrics to sampling intensity. Methods in Ecology and Evolution 8(9): 1072-1080. https://doi.org/10.1111/2041-210x.12728
+#  
+#  carabids <- read.delim("https://datadryad.org/stash/downloads/file_stream/23901", stringsAsFactors = FALSE)
+#  
 
 ## ---- warning=FALSE, error=FALSE----------------------------------------------
 dataset1 <- as.traitdata(carabids, 
@@ -24,33 +24,32 @@ dataset1 <- as.traitdata(carabids,
 
 head(dataset1)
 
-## ---- warning=FALSE, error=FALSE----------------------------------------------
-if(!l10n_info()$`UTF-8`) {Sys.setlocale("LC_CTYPE", "en_US.UTF-8")}
-
-heteroptera_raw <-  read.delim(url("https://ndownloader.figshare.com/files/5633883", 
-                                         encoding = "windows-1252"),
-                                    stringsAsFactors=TRUE)
-
-# Data publication: M. Gossner, Martin; K. Simons, Nadja; Hoeck, Leonhard; W.
-# Weisser, Wolfgang (2016): Morphometric measures of Heteroptera sampled in
-# grasslands across three regions of Germany. figshare.
-# https://doi.org/10.6084/m9.figshare.c.3307611.v1
-
-
-dataset2 <- as.traitdata(heteroptera_raw,
-              traits = c("Body_length", "Body_width", "Body_height", "Thorax_length",
-                         "Thorax_width", "Head_width", "Eye_width", "Antenna_Seg1",
-                         "Antenna_Seg2", "Antenna_Seg3", "Antenna_Seg4", "Antenna_Seg5",
-                         "Front.Tibia_length", "Mid.Tibia_length", "Hind.Tibia_length",
-                         "Front.Femur_length", "Hind.Femur_length", "Front.Femur_width",
-                         "Hind.Femur_width", "Rostrum_length", "Rostrum_width", 
-                         "Wing_length", "Wing_width"),
-              taxa = "SpeciesID",
-              occurrences = "ID"
-              )
-
-# show different trait measurements for same occurrence/individual
-subset(dataset2, occurrenceID == "5" ) 
+## ----  eval = FALSE, warning=FALSE, error=FALSE-------------------------------
+#  #
+#  # heteroptera_raw
+#  #
+#  # dataset included in package traitdataform
+#  #
+#  # Data publication: M. Gossner, Martin; K. Simons, Nadja; Hoeck, Leonhard; W.
+#  # Weisser, Wolfgang (2016): Morphometric measures of Heteroptera sampled in
+#  # grasslands across three regions of Germany. figshare.
+#  # https://doi.org/10.6084/m9.figshare.c.3307611.v1
+#  
+#  
+#  dataset2 <- as.traitdata(heteroptera_raw,
+#                traits = c("Body_length", "Body_width", "Body_height", "Thorax_length",
+#                           "Thorax_width", "Head_width", "Eye_width", "Antenna_Seg1",
+#                           "Antenna_Seg2", "Antenna_Seg3", "Antenna_Seg4", "Antenna_Seg5",
+#                           "Front.Tibia_length", "Mid.Tibia_length", "Hind.Tibia_length",
+#                           "Front.Femur_length", "Hind.Femur_length", "Front.Femur_width",
+#                           "Hind.Femur_width", "Rostrum_length", "Rostrum_width",
+#                           "Wing_length", "Wing_width"),
+#                taxa = "SpeciesID",
+#                occurrences = "ID"
+#                )
+#  
+#  # show different trait measurements for same occurrence/individual
+#  subset(dataset2, occurrenceID == "5" )
 
 ## ---- warning=FALSE, error=FALSE----------------------------------------------
 dataset2 <- as.traitdata(heteroptera_raw,

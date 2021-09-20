@@ -37,8 +37,9 @@
 #'   taxonID is a globally valid URI that links to the taxon description of the
 #'   GBIF backbone taxonomy.
 #'
-#' @import taxize
-#' @importFrom data.table rbindlist
+#' @import taxize 
+#' @import curl
+#' @importFrom data.table rbindlist 
 #' @export
 #'
 #' @examples
@@ -68,9 +69,18 @@ get_gbif_taxonomy <- function(x,
   
   matchtype = status = confidence = NULL
   
+  # test for internet connectivity
+  if( !curl::has_internet() ) {
+    message("Connection to Gbif Taxonomy API failed. Please check internet connectivity!")
+    temp <- lapply(x, function(i) {data.frame()} )
+    names(temp) <- x
+    
+  } else {
+    
   # get gbif mappings
-
+    
   temp <- taxize::get_gbifid_(x, messages = verbose)
+  }
   
   # loop over all species returns 
   
@@ -78,6 +88,13 @@ get_gbif_taxonomy <- function(x,
     
     warning_i = ""
     synonym_i = FALSE
+    
+    # add warning in offline mode
+    
+    if( !curl::has_internet() ) { 
+      warning_i = "Gbif Taxonomy Service unavailable! Internet connection required."
+      temp[[i]] <- data.frame(verbatimScientificName = x[i], matchtype = "NONE", status = "NA", rank = "species", stringsAsFactors = FALSE)
+      } else {
     
     # buildup empty returns
     
@@ -102,7 +119,7 @@ get_gbif_taxonomy <- function(x,
       temp[[i]] <- subset(temp[[i]], confidence >= conf_threshold)
       if(nrow(temp[[i]]) == 0) {
         temp[[i]] <- data.frame(verbatimScientificName = x[i], matchtype = "NONE", status = "NA", rank = "species", stringsAsFactors = FALSE)
-        warning_i <- paste(warning_i, "No match! Check spelling or lower confidence threshold!")
+        warning_i <- paste(warning_i, "Check spelling or lower confidence threshold!")
       }
     }
     
@@ -204,17 +221,17 @@ get_gbif_taxonomy <- function(x,
       }
     } 
     
+    }
     
     # 4. create structured output
-    if(temp[[i]]$matchtype != "NONE") {
-      
+
       temp[[i]] <- data.frame(
         verbatimScientificName = x[i], 
         synonym = synonym_i, 
-        scientificName = temp[[i]]$canonicalname, 
-        author = sub(paste0(temp[[i]]$canonicalname," "), "", temp[[i]]$scientificname),
-        taxonRank = temp[[i]]$rank,
-        confidence = temp[[i]]$confidence,
+        scientificName = if(is.null(temp[[i]]$canonicalname)) NA else temp[[i]]$canonicalname, 
+        author = if(is.null(temp[[i]]$canonicalname)) NA else sub(paste0(temp[[i]]$canonicalname," "), "", temp[[i]]$scientificname),
+        taxonRank = if(is.null(temp[[i]]$rank)) NA else temp[[i]]$rank,
+        confidence = if(is.null(temp[[i]]$confidence)) NA else temp[[i]]$confidence,
         kingdom = if(is.null(temp[[i]]$kingdom)) NA else temp[[i]]$kingdom,
         phylum = if(is.null(temp[[i]]$phylum)) NA else temp[[i]]$phylum,
         class = if(is.null(temp[[i]]$class)) NA else temp[[i]]$class,
@@ -222,13 +239,10 @@ get_gbif_taxonomy <- function(x,
         family = if(is.null(temp[[i]]$family)) NA else temp[[i]]$family,
         genus = if(is.null(temp[[i]]$genus)) NA else temp[[i]]$genus,
         taxonomy = "GBIF Backbone Taxonomy", 
-        taxonID = paste0("http://www.gbif.org/species/", temp[[i]]$usagekey, ""),
+        taxonID = if(is.null(temp[[i]]$usagekey)) NA else paste0("http://www.gbif.org/species/", temp[[i]]$usagekey, ""),
         warnings = NA,
         stringsAsFactors = FALSE
       )
-    } else {
-      temp[[i]] <- data.frame(verbatimScientificName = x[i], warnings = NA, stringsAsFactors = FALSE )
-    }
     
     temp[[i]]$warnings <- warning_i
     
@@ -242,7 +256,8 @@ get_gbif_taxonomy <- function(x,
   class(out) <- c("data.frame", "taxonomy")
   
   return(out)
-    
+  
+  
       
 }
  
