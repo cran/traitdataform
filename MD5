@@ -1,11 +1,11 @@
-3e0878207541d7416bc10d0220ef6b9f *DESCRIPTION
-c175a17c3c113288a4efe3514da4531c *LICENSE
-3dda07215bfb50e86a556c2b8482d00f *NAMESPACE
-adff223160b51ced08337972fe5f901b *NEWS.md
+53fb2e4500811fa0b12121df1f56841e *DESCRIPTION
+b9be372a13e7a1c0819d92cf370ac961 *LICENSE
+7578e73ccb18cb377071faa0e47145e8 *NAMESPACE
+c1cdb037609a0c5b904e2228d9794f60 *NEWS.md
 23898ee0a894a9f76c99234dddc0ceb4 *R/as.metadata.R
 660feca12d55b926ff5787a3d4fd5dce *R/as.traitdata.R
 60520ca7af663f50c82144b83a66781a *R/cast.traitdata.R
-813e5e51b94438e5c7f8d76eec29bbae *R/data.R
+87de4ae0fbde16f31fbdba6b062436d6 *R/data.R
 45667241fbf1ea99cd99ef54316b00c4 *R/get_gbif_taxonomy.R
 ffcf7a76113f4d27e8251c28631240f5 *R/glossary.R
 89ad33e83c81370896bc6a79cbd84781 *R/mutate.traitdata.R
@@ -16,9 +16,9 @@ a078b485f0b07f744c168619cf4cf994 *R/standardize.exploratories.R
 58ed555d2a33064dc809b8f3081b530a *R/thesaurus.R
 06b841be5008375a80d84f93f9a0a4b8 *R/traitdataform-package.R
 03a9ecdf0a4b46a541dc48262860b3a1 *R/utils.R
-341d25d48512fe28844d658889d09981 *README.md
-dd90ec667a2474aa13906e1a7083a05e *build/partial.rdb
-6822c90f116e8ab8cfefca4c9b4de334 *build/vignette.rds
+c908d2814dee9abce8204e8251088ab3 *README.md
+9ecb0bdfb906213cc54af05f9a8fb645 *build/partial.rdb
+f1f8cf862c34b107add0307cec70596f *build/vignette.rds
 6758158335ca3cf3862f81661e64317e *data/arthropodtraits.rda
 9b560937efc64b8ec0cc641d52320f53 *data/carabids.rda
 c4bdf92562dcf31702bb37363848e50c *data/heteroptera.rda
@@ -26,7 +26,7 @@ a29be4f07493331f156d5110525b9717 *data/heteroptera_raw.rda
 397f95555ef65ab3a7d1112868a1cb95 *inst/CITATION
 4454b5491bf983d534a8e5d173db8d0c *inst/doc/traitdataform.R
 3c15f20770aad27ebf92d59ed5dfd5c7 *inst/doc/traitdataform.Rmd
-b82ca43c727ac7a05b3b0821945fb79e *inst/doc/traitdataform.html
+221e7633cf7f8aedfe7bf553f74f3ded *inst/doc/traitdataform.html
 35eaa84395a08dd1b745a2d4da60249a *inst/extdata/amniota.R
 4f6dab01859358f3d60b701279fa8fc2 *inst/extdata/amphibio.R
 42a17de7cfc6bfb84dbf638aef102768 *inst/extdata/arthropodtraits.R
@@ -34,8 +34,8 @@ fd4d7ff35616d68bf5d8cc091230bc61 *inst/extdata/carabids.R
 8f8e3674335985912d174200d09491ab *inst/extdata/eltontraits.R
 7142989fc0a27cc3bcda05cc30d9068d *inst/extdata/heteroptera.R
 d376231a6a772955310c3f75773774a9 *inst/extdata/heteroptera_raw.R
-79b821564d92bc273c75282b0a34be33 *inst/extdata/mammaldiet.R
-fc4789a186c8df4580786418c41e5fef *inst/extdata/pantheria.R
+ac2b4657806760b5c950e7c2347099f0 *inst/extdata/mammaldiet.R
+ea01e8ae2968fc74c6ca3fa79d461db2 *inst/extdata/pantheria.R
 e0576c2a91cd7ecc63dd44635ef1b813 *man/amniota.Rd
 4357eda648a3bfb036fb78079fe80304 *man/amphibio.Rd
 13e20e2aec1d6649f8c8293439ae19cf *man/arthropodtraits.Rd
@@ -52,7 +52,7 @@ a4b168a8f967c74b4f42cb9b64816696 *man/fixlogical.Rd
 4d420f141d9d69bccc3fe19482db6e06 *man/heteroptera_raw.Rd
 bcfeb553644f6dcd65181998ba5a90c6 *man/mammaldiet.Rd
 b4ab33a7a4d696ad41fccbd471fa8130 *man/mutate.traitdata.Rd
-68d2d619e07a5d247d112ceb5391ad0c *man/pantheria.Rd
+b8711569cc73ea111c94d1225c2fa1a9 *man/pantheria.Rd
 53be09c925fd7bf56979e0789a97092c *man/pulldata.Rd
 2dc77d8bfdae3df60624dc2be06b0fe6 *man/rbind.traitdata.Rd
 0a050763cb445285963f53c9b7280884 *man/read.service.Rd
@@ -63,7 +63,7 @@ a219156a6f825ab9da0454e85511cde2 *man/standardize.exploratories.Rd
 0de1d03cbaed3eabf67ff15f60add93e *man/traitdataform-package.Rd
 9c65169f13525c5915e53d9feb763dda *tests/testthat.R
 55af149e9592f3e0e88001b6ed24a6f7 *tests/testthat/test.columns_to_ETS.R
-084b37ee4c9e7fa9596aea5e88a1624b *tests/testthat/test.map_gbif_taxonomy.R
+c877c728c21863e556cf1dd19a2d64c6 *tests/testthat/test.map_gbif_taxonomy.R
 dac632c693432105b7db97834b0c9bef *tests/testthat/test.standardize.R
 2743989fcc3fa1c4ddc31911d700c6b7 *vignettes/div05.bib
 db7e6bbd0ccee7a1004e7274047bf30c *vignettes/mee.csl
